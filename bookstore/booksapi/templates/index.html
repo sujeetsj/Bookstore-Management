@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bookstore Management</title>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #bookList {
+            margin-top: 20px;
+        }
+        .book-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #loginSection {
+            margin-bottom: 30px;
+        }
+        #bookManagement {
+            display: none;
+        }
+        #logoutButton {
+            background-color: #f44336;
+        }
+        #logoutButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+    </head>
+    <body>
+        <h1>Bookstore Management</h1>
+
+        <div id="loginSection">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username"
+                    required>
+                <input type="password" id="password" placeholder="Password"
+                    required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <div id="bookManagement">
+            <button id="logoutButton">Logout</button>
+            <h2>Create New Book</h2>
+            <form id="createBookForm">
+                <input type="text" id="title" placeholder="Title" required>
+                <input type="text" id="author" placeholder="Author" required>
+                <textarea id="description" placeholder="Description"
+                    required></textarea>
+                <input type="date" id="publishedDate" required>
+                <input type="number" id="price" placeholder="Price" step="0.01"
+                    required>
+                <button type="submit">Create Book</button>
+            </form>
+
+            <h2>Update Book</h2>
+            <form id="updateBookForm">
+                <input type="number" id="updateId" placeholder="Book ID"
+                    required>
+                <input type="text" id="updateTitle" placeholder="New Title">
+                <input type="text" id="updateAuthor" placeholder="New Author">
+                <textarea id="updateDescription"
+                    placeholder="New Description"></textarea>
+                <input type="date" id="updatePublishedDate">
+                <input type="number" id="updatePrice" placeholder="New Price"
+                    step="0.01">
+                <button type="submit">Update Book</button>
+            </form>
+
+            <h2>Delete Book</h2>
+            <form id="deleteBookForm">
+                <input type="number" id="deleteId" placeholder="Book ID"
+                    required>
+                <button type="submit">Delete Book</button>
+            </form>
+
+            <h2>Book List</h2>
+            <button id="fetchBooks">Fetch All Books</button>
+            <div id="bookList"></div>
+        </div>
+
+        <script>
+    const API_URL = 'http://localhost:8000/api/';
+    let token = '';
+
+    const setAuthHeader = () => {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    };
+
+    const clearForm = (formId) => {
+        document.getElementById(formId).reset();
+    };
+
+    const showLoginSection = () => {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('bookManagement').style.display = 'none';
+    };
+
+    const showBookManagement = () => {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('bookManagement').style.display = 'block';
+    };
+
+    // Login and get token
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`${API_URL}token/`, {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            });
+            token = response.data.access;
+            setAuthHeader();
+            alert('Login successful!');
+            showBookManagement();
+            fetchBooks();
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Login failed. Check your credentials.');
+        }
+    });
+
+    // Logout
+    document.getElementById('logoutButton').addEventListener('click', () => {
+        token = '';
+        showLoginSection();
+        clearForm('loginForm');
+    });
+
+    // Create Book
+    document.getElementById('createBookForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`${API_URL}books/`, {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                description: document.getElementById('description').value,
+                published_date: document.getElementById('publishedDate').value,
+                price: document.getElementById('price').value
+            });
+            alert('Book created successfully!');
+            clearForm('createBookForm');
+            fetchBooks();
+        } catch (error) {
+            console.error('Error creating book:', error);
+            alert('Failed to create book. Check console for details.');
+        }
+    });
+
+    // Update Book
+    document.getElementById('updateBookForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('updateId').value;
+        try {
+            const response = await axios.patch(`${API_URL}books/${id}/`, {
+                title: document.getElementById('updateTitle').value,
+                author: document.getElementById('updateAuthor').value,
+                description: document.getElementById('updateDescription').value,
+                published_date: document.getElementById('updatePublishedDate').value,
+                price: document.getElementById('updatePrice').value
+            });
+            alert('Book updated successfully!');
+            clearForm('updateBookForm');
+            fetchBooks();
+        } catch (error) {
+            console.error('Error updating book:', error);
+            alert('Failed to update book. Check console for details.');
+        }
+    });
+
+    // Delete Book
+    document.getElementById('deleteBookForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('deleteId').value;
+        try {
+            await axios.delete(`${API_URL}books/${id}/`);
+            alert('Book deleted successfully!');
+            clearForm('deleteBookForm');
+            fetchBooks();
+        } catch (error) {
+            console.error('Error deleting book:', error);
+            alert('Failed to delete book. Check console for details.');
+        }
+    });
+
+    // Fetch All Books
+    const fetchBooks = async () => {
+        try {
+            const response = await axios.get(`${API_URL}books/`);
+            const bookList = document.getElementById('bookList');
+            bookList.innerHTML = '';
+            response.data.forEach(book => {
+                const bookDiv = document.createElement('div');
+                bookDiv.className = 'book-item';
+                bookDiv.innerHTML = `
+                    <h3>${book.title}</h3>
+                    <p>Author: ${book.author}</p>
+                    <p>Description: ${book.description}</p>
+                    <p>Published Date: ${book.published_date}</p>
+                    <p>Price: $${book.price}</p>
+                `;
+                bookList.appendChild(bookDiv);
+            });
+        } catch (error) {
+            console.error('Error fetching books:', error);
+            alert('Failed to fetch books. Check console for details.');
+        }
+    };
+
+    document.getElementById('fetchBooks').addEventListener('click', fetchBooks);
+    </script>
+    </body>
+</html>
