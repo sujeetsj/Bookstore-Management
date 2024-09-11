@@ -2,6 +2,7 @@
 
 ## Overview
 The Bookstore Management System is a web-based application that allows users to manage a collection of books. It provides functionality for creating, reading, updating, and deleting book records, as well as user authentication.
+![image](https://github.com/user-attachments/assets/869804a9-fe34-4edc-a1f6-3855c9b0539c)
 
 ## Features
 - User Authentication (Login/Logout)
