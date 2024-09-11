@@ -113,6 +113,6 @@ Contributions to this project are welcome. Please follow these steps:
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Contact
-Your Name - your.email@example.com
+Sujeet Yadav-- sujeetyadav02222@gmail.com
 
-Project Link: [https://github.com/your-username/bookstore-management](https://github.com/your-username/bookstore-management)
+Project Link: [https://github.com/your-username/bookstore-management](https://github.com/sujeetsj/Bookstore-Management/tree/main/bookstore)
